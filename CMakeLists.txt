@@ -18,8 +18,10 @@ OPTION(AXL_LINK_STATIC "Default to static linking? (Needed for Cray)" OFF)
 SET(AXL_ASYNC_API "NONE" CACHE STRING "Vendor-specific asynchronous file transfer (CRAY_DW INTEL_CPPR IBM_BBAPI NONE)")
 SET_PROPERTY(CACHE AXL_ASYNC_API PROPERTY STRINGS NONE CRAY_DW INTEL_CPPR IBM_BBAPI)
 
-
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
+OPTION(AXL_ASYNC_DAEMON "Build separate asynchronous daemon" OFF)
+IF(AXL_ASYNC_DAEMON)
+  SET(HAVE_DAEMON TRUE)
+ENDIF(AXL_ASYNC_DAEMON)
 
 # Find Packages & Files
 
@@ -40,12 +42,6 @@ IF(ZLIB_FOUND)
 	LIST(APPEND AXL_EXTERNAL_LIBS ${ZLIB_LIBRARIES})
 	LIST(APPEND AXL_LINK_LINE "-lz")
 ENDIF(ZLIB_FOUND)
-
-# PTHREADS
-FIND_PACKAGE(Threads REQUIRED)
-IF(CMAKE_THREAD_LIBS_INIT)
-	LIST(APPEND AXL_EXTERNAL_LIBS "-lpthread")
-ENDIF()
 
 ## CPPR
 IF(${AXL_ASYNC_API} STREQUAL "INTEL_CPPR")
@@ -68,52 +64,17 @@ ENDIF(${AXL_ASYNC_API} STREQUAL "CRAY_DW")
 FIND_PACKAGE(BBAPI)
 IF(BBAPI_FOUND)
     SET(HAVE_BBAPI TRUE)
-
-    SET(ENABLE_BBAPI_FALLBACK OFF CACHE BOOL "Fallback to a different transfer type if BBAPI not supported")
-    IF(${ENABLE_BBAPI_FALLBACK})
-        SET(HAVE_BBAPI_FALLBACK TRUE)
-    ENDIF(${ENABLE_BBAPI_FALLBACK})
-
     INCLUDE_DIRECTORIES(${BBAPI_INCLUDE_DIRS})
     LIST(APPEND AXL_EXTERNAL_LIBS ${BBAPI_LIBRARIES})
     LIST(APPEND AXL_LINK_LINE " -L${WITH_BBAPI_PREFIX}/lib -lbbAPI")
 ENDIF(BBAPI_FOUND)
-
-############
-# This sets an rpath to buildtime libraries in build directory
-# and rewrites the rpath to the install location during install
-# these lines must come before add_library and add_executable macros
-############
-
-# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
-# use, i.e. don't skip the full RPATH for the build tree
-SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
-
-# when building, don't use the install RPATH already
-# (but later on when installing)
-SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-
-SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-
-# add the automatically determined parts of the RPATH
-# which point to directories outside the build tree to the install RPATH
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-# the RPATH to be used when installing, but only if it's not a system directory
-LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" isSystemDir)
-IF("${isSystemDir}" STREQUAL "-1")
-   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-ENDIF("${isSystemDir}" STREQUAL "-1")
-
-############
-# End rpath stuff
-############
 
 # Subdirectories
 ADD_SUBDIRECTORY(src)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 INCLUDE(CTest)
+INCLUDE(AXL_ADD_TEST)
 ADD_SUBDIRECTORY(test)
 
 # Generate config.h with all our build #defs
