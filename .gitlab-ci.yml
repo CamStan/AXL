@@ -2,8 +2,8 @@ slurm-job:
   tags:
     - quartz
     - batch
-  variables:
-     LLNL_SLURM_SCHEDULER_PARAMETERS: "-N 3 -p pbatch"
+#  variables:
+#     LLNL_SLURM_SCHEDULER_PARAMETERS: "-N 3 -p pbatch"
   script:
     - ./buildme_deps
     - source /etc/profile.d/z00_lmod.sh
@@ -21,7 +21,8 @@ lsf-job:
     - lassen
     - batch
   variables:
-     LLNL_LSF_SCHEDULER_PARAMETERS: "-nnodes 3 -q pbatch"
+     LLNL_LSF_SCHEDULER_PARAMETERS: "-stage storage=2"
+#     LLNL_LSF_SCHEDULER_PARAMETERS: "-nnodes 3 -q pbatch"
   script:
     - ./buildme_deps
     - source /etc/profile.d/z00_lmod.sh
