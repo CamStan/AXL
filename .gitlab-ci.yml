@@ -32,7 +32,7 @@ lsf-job:
     - mkdir build
     - cd build
     - cmake -DWITH_AXL_PREFIX=../install -DCMAKE_INSTALL_PREFIX=$installdir -DVELOC_RESOURCE_MANAGER=LSF -DCMAKE_BUILD_TYPE=Debug  -DOPENSSL_ROOT_DIR=/usr -DCMAKE_VERBOSE_BUILD=1 ..
-    - make
-    - make install
-    - make check
+    - jsrun make
+    - jsrun make install
+    - jsrun make check
 
