@@ -21,7 +21,7 @@ lsf-job:
     - lassen
     - batch
   variables:
-     LLNL_LSF_SCHEDULER_PARAMETERS: "-stage storage=2"
+     LLNL_LSF_SCHEDULER_PARAMETERS: "-nnodes 1 -q pbatch -stage storage=2"
 #     LLNL_LSF_SCHEDULER_PARAMETERS: "-nnodes 3 -q pbatch"
   script:
     - ./buildme_deps
